@@ -83,19 +83,28 @@ const SelfCareToolkit = () => {
 
   // Icon mapping for categories
   const iconMap = {
-    exercise: Dumbbell,
-    work: Briefcase,
-    nutrition: Apple,
-    meditation: Heart,
-    reading: Target,
-    social: MapPin
+    Dumbbell: Dumbbell,
+    Briefcase: Briefcase,
+    Apple: Apple,
+    Heart: Heart,
+    Target: Target,
+    MapPin: MapPin,
+    Settings: Settings,
+    Plus: Plus,
+    Trash2: Trash2,
+    X: X,
+    BookOpen: BookOpen,
+    Users: Users,
+    Edit2: Edit2,
+    Star: Star,
+    Clock: Clock
   };
 
   // Category definitions with detailed items
   const defaultCategories = {
     exercise: { 
       name: 'Exercise',
-      icon: iconMap.exercise,
+      iconName: 'Dumbbell',
       color: 'emerald',
       items: [
         { id: 'ex1', label: '20-minute bodyweight circuit', tip: 'No equipment needed' },
@@ -110,7 +119,7 @@ const SelfCareToolkit = () => {
     },
     work: { 
       name: 'Work',
-      icon: iconMap.work,
+      iconName: 'Briefcase',
       color: 'blue',
       items: [
         { id: 'w1', label: 'Set specific work hours', tip: 'Consistency is key' },
@@ -125,7 +134,7 @@ const SelfCareToolkit = () => {
     },
     nutrition: { 
       name: 'Nutrition',
-      icon: iconMap.nutrition,
+      iconName: 'Apple',
       color: 'orange',
       items: [
         { id: 'n1', label: 'Eat fresh fruits/vegetables', tip: 'Visit local markets' },
@@ -140,7 +149,7 @@ const SelfCareToolkit = () => {
     },
     meditation: {
       name: 'Meditation',
-      icon: iconMap.meditation,
+      iconName: 'Heart',
       color: 'purple',
       items: [
         { id: 'm1', label: 'Morning meditation', tip: '10-20 minutes to start the day' },
@@ -155,7 +164,7 @@ const SelfCareToolkit = () => {
     },
     reading: {
       name: 'Reading',
-      icon: iconMap.reading,
+      iconName: 'Target',
       color: 'indigo',
       items: [
         { id: 'r1', label: 'Read for 30 minutes', tip: 'Fiction or non-fiction' },
@@ -170,7 +179,7 @@ const SelfCareToolkit = () => {
     },
     social: {
       name: 'Social Connections',
-      icon: iconMap.social,
+      iconName: 'MapPin',
       color: 'pink',
       items: [
         { id: 's1', label: 'Video call family/friends', tip: 'Stay connected remotely' },
@@ -357,13 +366,12 @@ const SelfCareToolkit = () => {
       if (!newCategoryName.trim()) return;
       
       const categoryKey = newCategoryName.toLowerCase().replace(/\s+/g, '');
-      const Icon = iconOptions[selectedIcon];
       
       setCategories(prev => ({
         ...prev,
         [categoryKey]: {
           name: newCategoryName,
-          icon: Icon,
+          iconName: selectedIcon,
           color: selectedColor,
           items: Array.from({ length: 8 }, (_, i) => ({
             id: `${categoryKey}${i + 1}`,
@@ -495,7 +503,7 @@ const SelfCareToolkit = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Current Categories</h3>
               {Object.entries(categories).map(([key, category]) => {
-                const Icon = category.icon;
+                const Icon = iconMap[category.iconName] || iconMap.Target;
                 const isDefault = defaultCategories[key] !== undefined;
                 
                 return (
@@ -622,7 +630,7 @@ const SelfCareToolkit = () => {
   const CategoryCard = ({ categoryKey, category }) => {
     const dateData = getDateData(selectedDate);
     const completion = getCategoryCompletion(categoryKey, selectedDate);
-    const Icon = category.icon;
+    const Icon = iconMap[category.iconName] || iconMap.Target;
     
     const colorStyles = {
       emerald: 'from-emerald-500 to-green-600',
@@ -726,7 +734,7 @@ const SelfCareToolkit = () => {
         <div className="grid md:grid-cols-3 gap-6">
           {Object.entries(categories).map(([key, cat]) => {
             const stats = monthStats[key];
-            const Icon = cat.icon;
+            const Icon = iconMap[cat.iconName] || iconMap.Target;
             const colorStyles = {
               emerald: 'from-emerald-500 to-green-600 border-emerald-200 bg-emerald-50',
               blue: 'from-blue-500 to-indigo-600 border-blue-200 bg-blue-50',
@@ -888,7 +896,7 @@ const SelfCareToolkit = () => {
           <div className="grid grid-cols-3 gap-4">
             {Object.entries(categories).map(([key, cat]) => {
               const streak = calculateStreak(key);
-              const Icon = cat.icon;
+              const Icon = iconMap[cat.iconName] || iconMap.Target;
               const colorStyles = {
                 emerald: 'from-emerald-100 to-green-100 border-emerald-300 text-emerald-800',
                 blue: 'from-blue-100 to-indigo-100 border-blue-300 text-blue-800',
