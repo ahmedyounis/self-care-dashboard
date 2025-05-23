@@ -1,0 +1,575 @@
+import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import { 
+  CheckCircle, Circle, Calendar, Dumbbell, Briefcase, Apple, 
+  MapPin, Clock, Target, TrendingUp, Award, Flame, ChevronLeft, 
+  ChevronRight, Star, Heart, Sparkles, BarChart3, Quote
+} from 'lucide-react';
+
+const SelfCareToolkit = () => {
+  // Initialize state with localStorage
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [dailyData, setDailyData] = useState(() => {
+    const saved = localStorage.getItem('selfCareDailyData');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [activeTab, setActiveTab] = useState('exercise');
+  const [viewMode, setViewMode] = useState('daily');
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  // Motivational quotes
+  const quotes = [
+    { text: "The journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
+    { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+    { text: "Progress, not perfection.", author: "Unknown" },
+    { text: "A year from now, you'll wish you had started today.", author: "Karen Lamb" },
+    { text: "The only bad workout is the one that didn't happen.", author: "Unknown" },
+    { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" },
+    { text: "Success is the sum of small efforts repeated day in and day out.", author: "Robert Collier" },
+    { text: "Your future is created by what you do today, not tomorrow.", author: "Robert Kiyosaki" },
+    { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+    { text: "It's not about perfect. It's about effort.", author: "Jillian Michaels" },
+    { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+    { text: "The difference between ordinary and extraordinary is that little extra.", author: "Jimmy Johnson" },
+    { text: "Every moment is a fresh beginning.", author: "T.S. Eliot" },
+    { text: "You are never too old to set another goal or to dream a new dream.", author: "C.S. Lewis" },
+    { text: "The body achieves what the mind believes.", author: "Napoleon Hill" },
+    { text: "Your health is an investment, not an expense.", author: "Unknown" },
+    { text: "A healthy outside starts from the inside.", author: "Robert Urich" },
+    { text: "The groundwork for all happiness is good health.", author: "Leigh Hunt" },
+    { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin" },
+    { text: "The only limit to our realization of tomorrow is our doubts of today.", author: "Franklin D. Roosevelt" },
+    { text: "Do something today that your future self will thank you for.", author: "Sean Patrick Flanery" },
+    { text: "Small steps daily lead to big changes yearly.", author: "Unknown" },
+    { text: "Your body hears everything your mind says.", author: "Naomi Judd" },
+    { text: "The best project you'll ever work on is you.", author: "Unknown" },
+    { text: "Motivation is what gets you started. Habit is what keeps you going.", author: "Jim Ryun" },
+    { text: "Don't put off tomorrow what you can do today.", author: "Benjamin Franklin" },
+    { text: "The pain you feel today will be the strength you feel tomorrow.", author: "Unknown" },
+    { text: "A goal without a plan is just a wish.", author: "Antoine de Saint-Exupéry" }
+  ];
+
+  const [dailyQuote] = useState(() => {
+    const today = new Date().toDateString();
+    const savedQuote = localStorage.getItem('dailyQuote');
+    const savedQuoteData = savedQuote ? JSON.parse(savedQuote) : null;
+    
+    if (savedQuoteData && savedQuoteData.date === today) {
+      return savedQuoteData.quote;
+    } else {
+      const newQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      localStorage.setItem('dailyQuote', JSON.stringify({ date: today, quote: newQuote }));
+      return newQuote;
+    }
+  });
+
+  // Save to localStorage whenever dailyData changes
+  useEffect(() => {
+    localStorage.setItem('selfCareDailyData', JSON.stringify(dailyData));
+  }, [dailyData]);
+
+  // Category definitions with detailed items
+  const categories = {
+    exercise: { 
+      name: 'Exercise',
+      icon: Dumbbell,
+      color: 'emerald',
+      items: [
+        { id: 'ex1', label: '20-minute bodyweight circuit', tip: 'No equipment needed' },
+        { id: 'ex2', label: 'Morning walk/jog', tip: 'Great for exploring new areas' },
+        { id: 'ex3', label: 'Yoga or stretching', tip: 'Perfect for small spaces' },
+        { id: 'ex4', label: 'Bike ride', tip: 'Exercise + exploration' },
+        { id: 'ex5', label: 'Gym session', tip: 'Maintain your routine' },
+        { id: 'ex6', label: 'Swimming', tip: 'Full-body workout' },
+        { id: 'ex7', label: 'Local fitness class', tip: 'Try something new' },
+        { id: 'ex8', label: 'Hiking/outdoor activity', tip: 'Connect with nature' }
+      ]
+    },
+    work: { 
+      name: 'Work',
+      icon: Briefcase,
+      color: 'blue',
+      items: [
+        { id: 'w1', label: 'Set specific work hours', tip: 'Consistency is key' },
+        { id: 'w2', label: 'Block calendar for deep work', tip: 'Protect your focus time' },
+        { id: 'w3', label: 'Complete morning routine', tip: 'Start the day right' },
+        { id: 'w4', label: 'End-of-day shutdown ritual', tip: 'Clear boundaries' },
+        { id: 'w5', label: 'Plan tomorrow\'s priorities', tip: 'Hit the ground running' },
+        { id: 'w6', label: 'Use Pomodoro technique', tip: '25min work, 5min break' },
+        { id: 'w7', label: 'Batch similar tasks', tip: 'Maximize efficiency' },
+        { id: 'w8', label: 'Track work hours', tip: 'Know your patterns' }
+      ]
+    },
+    nutrition: { 
+      name: 'Nutrition',
+      icon: Apple,
+      color: 'orange',
+      items: [
+        { id: 'n1', label: 'Eat fresh fruits/vegetables', tip: 'Visit local markets' },
+        { id: 'n2', label: 'Choose healthy snacks', tip: 'Nuts, seeds, fruits' },
+        { id: 'n3', label: 'Lean protein with meals', tip: 'Fish, chicken, legumes' },
+        { id: 'n4', label: 'Whole grains over refined', tip: 'Brown rice, quinoa, oats' },
+        { id: 'n5', label: 'Meal prep or plan', tip: 'Stay on track' },
+        { id: 'n6', label: 'Mindful eating', tip: 'No distractions' },
+        { id: 'n7', label: 'Stay hydrated', tip: '8+ glasses of water' },
+        { id: 'n8', label: 'Limit processed foods', tip: 'Choose whole foods' }
+      ]
+    }
+  };
+
+  // Get data for selected date
+  const getDateData = (date) => {
+    return dailyData[date] || {};
+  };
+
+  // Toggle item completion
+  const toggleItem = (itemId) => {
+    setDailyData(prev => ({
+      ...prev,
+      [selectedDate]: {
+        ...prev[selectedDate],
+        [itemId]: !prev[selectedDate]?.[itemId]
+      }
+    }));
+  };
+
+  // Calculate completion percentage for a category on a specific date
+  const getCategoryCompletion = (categoryKey, date) => {
+    const dateData = getDateData(date);
+    const categoryItems = categories[categoryKey].items;
+    const completedCount = categoryItems.filter(item => dateData[item.id]).length;
+    return Math.round((completedCount / categoryItems.length) * 100);
+  };
+
+  // Calculate overall daily completion
+  const getDailyCompletion = (date) => {
+    const total = Object.values(categories).reduce((acc, cat) => acc + cat.items.length, 0);
+    const dateData = getDateData(date);
+    const completed = Object.values(dateData).filter(Boolean).length;
+    return Math.round((completed / total) * 100);
+  };
+
+  // Calculate streak for a category
+  const calculateStreak = (categoryKey) => {
+    let streak = 0;
+    let currentDate = new Date();
+    
+    while (true) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const completion = getCategoryCompletion(categoryKey, dateStr);
+      
+      if (completion >= 50) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  };
+
+  // Navigate dates
+  const navigateDate = (direction) => {
+    const current = new Date(selectedDate);
+    current.setDate(current.getDate() + direction);
+    setSelectedDate(current.toISOString().split('T')[0]);
+  };
+
+  // Format date for display
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (dateStr === today) return 'Today';
+    if (dateStr === yesterday.toISOString().split('T')[0]) return 'Yesterday';
+    
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // Get week data for weekly view
+  const getWeekData = () => {
+    const weekStart = new Date(selectedDate);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const weekData = [];
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(weekStart);
+      date.setDate(weekStart.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      weekData.push({
+        date: dateStr,
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        dayNum: date.getDate(),
+        completion: getDailyCompletion(dateStr),
+        categories: Object.keys(categories).reduce((acc, key) => ({
+          ...acc,
+          [key]: getCategoryCompletion(key, dateStr)
+        }), {})
+      });
+    }
+    
+    return weekData;
+  };
+
+  // Get month data
+  const getMonthData = () => {
+    const stats = {};
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    Object.keys(categories).forEach(categoryKey => {
+      let totalDays = 0;
+      let completedDays = 0;
+      let totalCompletion = 0;
+      
+      for (let i = 0; i < 30; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const completion = getCategoryCompletion(categoryKey, dateStr);
+        
+        totalDays++;
+        totalCompletion += completion;
+        if (completion >= 50) completedDays++;
+      }
+      
+      stats[categoryKey] = {
+        avgCompletion: Math.round(totalCompletion / totalDays),
+        daysCompleted: completedDays,
+        totalDays
+      };
+    });
+    
+    return stats;
+  };
+
+  const ChecklistItem = ({ item, checked }) => (
+    <div className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+         onClick={() => toggleItem(item.id)}>
+      <button className="mt-0.5 transition-all duration-200">
+        {checked ? 
+          <CheckCircle size={22} className="text-emerald-600" /> : 
+          <Circle size={22} className="text-gray-400 hover:text-gray-600" />
+        }
+      </button>
+      <div className="flex-1">
+        <div className={`font-medium transition-all duration-200 ${
+          checked ? 'line-through text-gray-500' : 'text-gray-800'
+        }`}>
+          {item.label}
+        </div>
+        <div className="text-sm text-gray-500 mt-0.5">{item.tip}</div>
+      </div>
+    </div>
+  );
+
+  const CategoryCard = ({ categoryKey, category }) => {
+    const dateData = getDateData(selectedDate);
+    const completion = getCategoryCompletion(categoryKey, selectedDate);
+    const Icon = category.icon;
+    
+    const colorStyles = {
+      emerald: 'from-emerald-500 to-green-600',
+      blue: 'from-blue-500 to-indigo-600',
+      orange: 'from-orange-500 to-red-600'
+    };
+
+    return (
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className={`bg-gradient-to-r ${colorStyles[category.color]} p-4 text-white`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Icon size={24} />
+              <h3 className="text-lg font-semibold">{category.name}</h3>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold">{completion}%</div>
+              <div className="text-sm opacity-90">Complete</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 space-y-2">
+          {category.items.map(item => (
+            <ChecklistItem 
+              key={item.id} 
+              item={item} 
+              checked={dateData[item.id]} 
+            />
+          ))}
+        </div>
+        
+        <div className="px-4 pb-4">
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className={`h-3 rounded-full bg-gradient-to-r ${colorStyles[category.color]} transition-all duration-500`}
+              style={{ width: `${completion}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const WeeklyView = () => {
+    const weekData = getWeekData();
+    const colorMap = {
+      emerald: 'bg-emerald-500',
+      blue: 'bg-blue-500',
+      orange: 'bg-orange-500'
+    };
+
+    return (
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <h3 className="text-xl font-bold text-gray-800 mb-6">Weekly Overview</h3>
+        <div className="grid grid-cols-7 gap-4">
+          {weekData.map((day, index) => (
+            <div key={index} className="text-center">
+              <div className="text-sm font-medium text-gray-600 mb-1">{day.day}</div>
+              <div className="text-lg font-bold text-gray-800 mb-3">{day.dayNum}</div>
+              <div className="space-y-2">
+                {Object.entries(categories).map(([key, cat]) => (
+                  <div key={key} className="relative group">
+                    <div 
+                      className={`w-10 h-10 mx-auto rounded-full ${
+                        day.categories[key] >= 50 ? colorMap[cat.color] : 'bg-gray-200'
+                      } transition-all duration-300`}
+                    >
+                      <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
+                        {day.categories[key]}%
+                      </div>
+                    </div>
+                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      {cat.name}: {day.categories[key]}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 text-sm font-semibold text-gray-700">
+                {day.completion}%
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const MonthlyView = () => {
+    const monthStats = getMonthData();
+    
+    return (
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <h3 className="text-xl font-bold text-gray-800 mb-6">30-Day Statistics</h3>
+        <div className="grid md:grid-cols-3 gap-6">
+          {Object.entries(categories).map(([key, cat]) => {
+            const stats = monthStats[key];
+            const Icon = cat.icon;
+            const colorStyles = {
+              emerald: 'from-emerald-500 to-green-600 border-emerald-200 bg-emerald-50',
+              blue: 'from-blue-500 to-indigo-600 border-blue-200 bg-blue-50',
+              orange: 'from-orange-500 to-red-600 border-orange-200 bg-orange-50'
+            };
+            
+            return (
+              <div key={key} className={`rounded-lg border-2 p-6 ${colorStyles[cat.color].split(' ').slice(2).join(' ')}`}>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className={`p-3 rounded-lg bg-gradient-to-r ${colorStyles[cat.color].split(' ').slice(0, 2).join(' ')} text-white`}>
+                    <Icon size={24} />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800">{cat.name}</h4>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-3xl font-bold text-gray-800">{stats.avgCompletion}%</div>
+                    <div className="text-sm text-gray-600">Average Completion</div>
+                  </div>
+                  
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Days Completed</span>
+                    <span className="font-semibold">{stats.daysCompleted} / {stats.totalDays}</span>
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full bg-gradient-to-r ${colorStyles[cat.color].split(' ').slice(0, 2).join(' ')}`}
+                      style={{ width: `${(stats.daysCompleted / stats.totalDays) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center justify-center">
+            <Sparkles className="mr-3 text-yellow-500" size={36} />
+            Digital Nomad Self-Care Dashboard
+            <Sparkles className="ml-3 text-yellow-500" size={36} />
+          </h1>
+          <p className="text-gray-600 text-lg">Building healthy habits for a balanced nomadic life</p>
+        </div>
+
+        {/* Daily Quote */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+          <div className="flex items-start space-x-3">
+            <Quote className="mt-1 flex-shrink-0" size={24} />
+            <div>
+              <p className="text-xl font-medium italic mb-2">"{dailyQuote.text}"</p>
+              <p className="text-right text-purple-100">— {dailyQuote.author}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Date Navigation and View Mode */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigateDate(-1)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              <button
+                onClick={() => setShowCalendar(!showCalendar)}
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <Calendar size={20} />
+                <span className="font-medium">{formatDate(selectedDate)}</span>
+              </button>
+              
+              <button
+                onClick={() => navigateDate(1)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                disabled={selectedDate >= new Date().toISOString().split('T')[0]}
+              >
+                <ChevronRight size={20} />
+              </button>
+              
+              {selectedDate !== new Date().toISOString().split('T')[0] && (
+                <button
+                  onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
+                >
+                  Today
+                </button>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setViewMode('daily')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  viewMode === 'daily' ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                Daily
+              </button>
+              <button
+                onClick={() => setViewMode('weekly')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  viewMode === 'weekly' ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                Weekly
+              </button>
+              <button
+                onClick={() => setViewMode('monthly')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  viewMode === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                Monthly
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Streaks */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <Flame className="mr-2 text-orange-500" size={24} />
+            Current Streaks
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            {Object.entries(categories).map(([key, cat]) => {
+              const streak = calculateStreak(key);
+              const Icon = cat.icon;
+              const colorStyles = {
+                emerald: 'from-emerald-100 to-green-100 border-emerald-300 text-emerald-800',
+                blue: 'from-blue-100 to-indigo-100 border-blue-300 text-blue-800',
+                orange: 'from-orange-100 to-red-100 border-orange-300 text-orange-800'
+              };
+              
+              return (
+                <div key={key} className={`bg-gradient-to-r ${colorStyles[cat.color]} border-2 rounded-lg p-4 text-center`}>
+                  <Icon className="mx-auto mb-2" size={24} />
+                  <div className="text-3xl font-bold">{streak}</div>
+                  <div className="text-sm font-medium">day{streak !== 1 ? 's' : ''}</div>
+                  <div className="text-xs mt-1 opacity-75">{cat.name}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        {viewMode === 'daily' && (
+          <div className="grid md:grid-cols-3 gap-6">
+            {Object.entries(categories).map(([key, cat]) => (
+              <CategoryCard key={key} categoryKey={key} category={cat} />
+            ))}
+          </div>
+        )}
+
+        {viewMode === 'weekly' && <WeeklyView />}
+        {viewMode === 'monthly' && <MonthlyView />}
+
+        {/* Progress Summary */}
+        <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold mb-1">Daily Progress</h3>
+              <p className="text-indigo-100">Keep building those healthy habits!</p>
+            </div>
+            <div className="text-right">
+              <div className="text-4xl font-bold">{getDailyCompletion(selectedDate)}%</div>
+              <div className="text-sm text-indigo-100">Overall Completion</div>
+            </div>
+          </div>
+          
+          <div className="mt-4 flex items-center space-x-2 text-sm">
+            <Star className="text-yellow-400" size={20} />
+            <span>Remember: Progress over perfection. Every small step counts!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Mount the React app
+const root = createRoot(document.getElementById('root'));
+root.render(<SelfCareToolkit />);
