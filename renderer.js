@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { 
   CheckCircle, Circle, Calendar, Dumbbell, Briefcase, Apple, 
   MapPin, Clock, Target, TrendingUp, Award, Flame, ChevronLeft, 
-  ChevronRight, Star, Heart, Sparkles, BarChart3, Quote
+  ChevronRight, Star, Heart, Sparkles, BarChart3, Quote,
+  Settings, Plus, Trash2, X, BookOpen, Users, Edit2
 } from 'lucide-react';
 
 const SelfCareToolkit = () => {
@@ -16,6 +17,12 @@ const SelfCareToolkit = () => {
   const [activeTab, setActiveTab] = useState('exercise');
   const [viewMode, setViewMode] = useState('daily');
   const [showCalendar, setShowCalendar] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
+  const [journalEntries, setJournalEntries] = useState(() => {
+    const saved = localStorage.getItem('selfCareJournalEntries');
+    return saved ? JSON.parse(saved) : {};
+  });
 
   // Motivational quotes
   const quotes = [
@@ -65,10 +72,18 @@ const SelfCareToolkit = () => {
     }
   });
 
-  // Save to localStorage whenever dailyData changes
+  // Save to localStorage whenever data changes
   useEffect(() => {
     localStorage.setItem('selfCareDailyData', JSON.stringify(dailyData));
   }, [dailyData]);
+
+  useEffect(() => {
+    localStorage.setItem('selfCareJournalEntries', JSON.stringify(journalEntries));
+  }, [journalEntries]);
+
+  useEffect(() => {
+    localStorage.setItem('selfCareCategories', JSON.stringify(categories));
+  }, [categories]);
 
   // Category definitions with detailed items
   const defaultCategories = {
@@ -303,6 +318,72 @@ const SelfCareToolkit = () => {
     });
     
     return stats;
+  };
+
+  // Journal Component
+  const JournalModal = () => {
+    const currentEntry = journalEntries[selectedDate] || '';
+    const [tempEntry, setTempEntry] = useState(currentEntry);
+
+    const saveJournal = () => {
+      setJournalEntries(prev => ({
+        ...prev,
+        [selectedDate]: tempEntry
+      }));
+      setShowJournal(false);
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+          <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex items-center space-x-3">
+              <Edit2 size={24} className="text-indigo-600" />
+              <h2 className="text-2xl font-bold text-gray-800">Daily Journal</h2>
+            </div>
+            <button
+              onClick={() => setShowJournal(false)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          <div className="p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                {formatDate(selectedDate)}
+              </h3>
+              <p className="text-sm text-gray-500">
+                Reflect on your day, capture thoughts, and track your journey.
+              </p>
+            </div>
+            
+            <textarea
+              value={tempEntry}
+              onChange={(e) => setTempEntry(e.target.value)}
+              placeholder="How was your day? What are you grateful for? What did you learn?"
+              className="w-full h-64 p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowJournal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveJournal}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Save Entry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const ChecklistItem = ({ item, checked }) => (
@@ -563,6 +644,24 @@ const SelfCareToolkit = () => {
               >
                 Monthly
               </button>
+              
+              <div className="border-l border-gray-300 h-8 mx-2" />
+              
+              <button
+                onClick={() => setShowJournal(true)}
+                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg font-medium hover:bg-indigo-200 transition-colors flex items-center space-x-2"
+              >
+                <Edit2 size={18} />
+                <span>Journal</span>
+              </button>
+              
+              <button
+                onClick={() => setShowSettings(true)}
+                className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                title="Manage Categories"
+              >
+                <Settings size={20} />
+              </button>
             </div>
           </div>
         </div>
@@ -629,6 +728,9 @@ const SelfCareToolkit = () => {
           </div>
         </div>
       </div>
+      
+      {/* Modals */}
+      {showJournal && <JournalModal />}
     </div>
   );
 };
