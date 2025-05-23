@@ -71,7 +71,7 @@ const SelfCareToolkit = () => {
   }, [dailyData]);
 
   // Category definitions with detailed items
-  const categories = {
+  const defaultCategories = {
     exercise: { 
       name: 'Exercise',
       icon: Dumbbell,
@@ -116,8 +116,59 @@ const SelfCareToolkit = () => {
         { id: 'n7', label: 'Stay hydrated', tip: '8+ glasses of water' },
         { id: 'n8', label: 'Limit processed foods', tip: 'Choose whole foods' }
       ]
+    },
+    meditation: {
+      name: 'Meditation',
+      icon: Heart,
+      color: 'purple',
+      items: [
+        { id: 'm1', label: 'Morning meditation', tip: '10-20 minutes to start the day' },
+        { id: 'm2', label: 'Breathing exercises', tip: '4-7-8 technique or box breathing' },
+        { id: 'm3', label: 'Gratitude practice', tip: 'List 3 things you\'re grateful for' },
+        { id: 'm4', label: 'Body scan meditation', tip: 'Release physical tension' },
+        { id: 'm5', label: 'Walking meditation', tip: 'Mindful movement' },
+        { id: 'm6', label: 'Evening reflection', tip: 'Review and release the day' },
+        { id: 'm7', label: 'Guided meditation app', tip: 'Use Headspace, Calm, etc.' },
+        { id: 'm8', label: 'Mindfulness moments', tip: 'Brief pauses throughout the day' }
+      ]
+    },
+    reading: {
+      name: 'Reading',
+      icon: Target,
+      color: 'indigo',
+      items: [
+        { id: 'r1', label: 'Read for 30 minutes', tip: 'Fiction or non-fiction' },
+        { id: 'r2', label: 'Morning news/articles', tip: 'Stay informed' },
+        { id: 'r3', label: 'Professional development', tip: 'Industry blogs or books' },
+        { id: 'r4', label: 'Learn something new', tip: 'Online courses or tutorials' },
+        { id: 'r5', label: 'Read before bed', tip: 'Better than screens' },
+        { id: 'r6', label: 'Join online book club', tip: 'Connect with readers' },
+        { id: 'r7', label: 'Take reading notes', tip: 'Improve retention' },
+        { id: 'r8', label: 'Share key learnings', tip: 'Teach what you learn' }
+      ]
+    },
+    social: {
+      name: 'Social Connections',
+      icon: MapPin,
+      color: 'pink',
+      items: [
+        { id: 's1', label: 'Video call family/friends', tip: 'Stay connected remotely' },
+        { id: 's2', label: 'Join local meetup/event', tip: 'Meet people in new places' },
+        { id: 's3', label: 'Work from co-working space', tip: 'Combat isolation' },
+        { id: 's4', label: 'Have a meaningful conversation', tip: 'Quality over quantity' },
+        { id: 's5', label: 'Send thoughtful message', tip: 'Check in on someone' },
+        { id: 's6', label: 'Schedule social time', tip: 'Make it a priority' },
+        { id: 's7', label: 'Join online community', tip: 'Find your tribe' },
+        { id: 's8', label: 'Practice active listening', tip: 'Be present in conversations' }
+      ]
     }
   };
+
+  // Load categories from localStorage or use defaults
+  const [categories, setCategories] = useState(() => {
+    const saved = localStorage.getItem('selfCareCategories');
+    return saved ? JSON.parse(saved) : defaultCategories;
+  });
 
   // Get data for selected date
   const getDateData = (date) => {
@@ -282,7 +333,10 @@ const SelfCareToolkit = () => {
     const colorStyles = {
       emerald: 'from-emerald-500 to-green-600',
       blue: 'from-blue-500 to-indigo-600',
-      orange: 'from-orange-500 to-red-600'
+      orange: 'from-orange-500 to-red-600',
+      purple: 'from-purple-500 to-pink-600',
+      indigo: 'from-indigo-500 to-purple-600',
+      pink: 'from-pink-500 to-rose-600'
     };
 
     return (
@@ -327,7 +381,10 @@ const SelfCareToolkit = () => {
     const colorMap = {
       emerald: 'bg-emerald-500',
       blue: 'bg-blue-500',
-      orange: 'bg-orange-500'
+      orange: 'bg-orange-500',
+      purple: 'bg-purple-500',
+      indigo: 'bg-indigo-500',
+      pink: 'bg-pink-500'
     };
 
     return (
@@ -379,7 +436,10 @@ const SelfCareToolkit = () => {
             const colorStyles = {
               emerald: 'from-emerald-500 to-green-600 border-emerald-200 bg-emerald-50',
               blue: 'from-blue-500 to-indigo-600 border-blue-200 bg-blue-50',
-              orange: 'from-orange-500 to-red-600 border-orange-200 bg-orange-50'
+              orange: 'from-orange-500 to-red-600 border-orange-200 bg-orange-50',
+              purple: 'from-purple-500 to-pink-600 border-purple-200 bg-purple-50',
+              indigo: 'from-indigo-500 to-purple-600 border-indigo-200 bg-indigo-50',
+              pink: 'from-pink-500 to-rose-600 border-pink-200 bg-pink-50'
             };
             
             return (
@@ -520,7 +580,10 @@ const SelfCareToolkit = () => {
               const colorStyles = {
                 emerald: 'from-emerald-100 to-green-100 border-emerald-300 text-emerald-800',
                 blue: 'from-blue-100 to-indigo-100 border-blue-300 text-blue-800',
-                orange: 'from-orange-100 to-red-100 border-orange-300 text-orange-800'
+                orange: 'from-orange-100 to-red-100 border-orange-300 text-orange-800',
+                purple: 'from-purple-100 to-pink-100 border-purple-300 text-purple-800',
+                indigo: 'from-indigo-100 to-purple-100 border-indigo-300 text-indigo-800',
+                pink: 'from-pink-100 to-rose-100 border-pink-300 text-pink-800'
               };
               
               return (
@@ -537,7 +600,7 @@ const SelfCareToolkit = () => {
 
         {/* Main Content */}
         {viewMode === 'daily' && (
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Object.entries(categories).map(([key, cat]) => (
               <CategoryCard key={key} categoryKey={key} category={cat} />
             ))}
