@@ -321,6 +321,209 @@ const SelfCareToolkit = () => {
   };
 
   // Journal Component
+  // Settings/Category Management Component
+  const SettingsModal = () => {
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [selectedIcon, setSelectedIcon] = useState('Target');
+    const [selectedColor, setSelectedColor] = useState('emerald');
+    const [editingCategory, setEditingCategory] = useState(null);
+
+    const iconOptions = {
+      Target: Target,
+      Heart: Heart,
+      Star: Star,
+      BookOpen: BookOpen,
+      Users: Users,
+      Dumbbell: Dumbbell,
+      Briefcase: Briefcase,
+      Apple: Apple,
+      MapPin: MapPin,
+      Clock: Clock
+    };
+
+    const colorOptions = ['emerald', 'blue', 'orange', 'purple', 'indigo', 'pink'];
+
+    const addCategory = () => {
+      if (!newCategoryName.trim()) return;
+      
+      const categoryKey = newCategoryName.toLowerCase().replace(/\s+/g, '');
+      const Icon = iconOptions[selectedIcon];
+      
+      setCategories(prev => ({
+        ...prev,
+        [categoryKey]: {
+          name: newCategoryName,
+          icon: Icon,
+          color: selectedColor,
+          items: Array.from({ length: 8 }, (_, i) => ({
+            id: `${categoryKey}${i + 1}`,
+            label: `${newCategoryName} task ${i + 1}`,
+            tip: 'Custom task'
+          }))
+        }
+      }));
+      
+      setNewCategoryName('');
+    };
+
+    const deleteCategory = (categoryKey) => {
+      if (Object.keys(categories).length <= 3) {
+        alert('You must keep at least 3 categories');
+        return;
+      }
+      
+      setCategories(prev => {
+        const newCategories = { ...prev };
+        delete newCategories[categoryKey];
+        return newCategories;
+      });
+    };
+
+    const resetToDefaults = () => {
+      if (confirm('Reset all categories to defaults? This will remove custom categories.')) {
+        setCategories(defaultCategories);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[80vh] overflow-hidden">
+          <div className="flex items-center justify-between p-6 border-b">
+            <div className="flex items-center space-x-3">
+              <Settings size={24} className="text-gray-600" />
+              <h2 className="text-2xl font-bold text-gray-800">Manage Categories</h2>
+            </div>
+            <button
+              onClick={() => setShowSettings(false)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          
+          <div className="p-6 overflow-y-auto max-h-[60vh]">
+            {/* Add New Category */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Add New Category</h3>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Category name"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                
+                <div className="flex space-x-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Icon</label>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(iconOptions).map(([name, Icon]) => (
+                        <button
+                          key={name}
+                          onClick={() => setSelectedIcon(name)}
+                          className={`p-2 rounded-lg border-2 transition-colors ${
+                            selectedIcon === name 
+                              ? 'border-blue-500 bg-blue-50' 
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
+                        >
+                          <Icon size={20} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                    <div className="flex flex-wrap gap-2">
+                      {colorOptions.map(color => (
+                        <button
+                          key={color}
+                          onClick={() => setSelectedColor(color)}
+                          className={`w-12 h-12 rounded-lg border-2 transition-colors ${
+                            selectedColor === color 
+                              ? 'ring-2 ring-offset-2 ring-gray-400' 
+                              : ''
+                          }`}
+                          style={{
+                            background: `linear-gradient(to right, 
+                              ${color === 'emerald' ? '#10b981' : 
+                                color === 'blue' ? '#3b82f6' : 
+                                color === 'orange' ? '#f97316' : 
+                                color === 'purple' ? '#a855f7' : 
+                                color === 'indigo' ? '#6366f1' : 
+                                '#ec4899'}, 
+                              ${color === 'emerald' ? '#16a34a' : 
+                                color === 'blue' ? '#4f46e5' : 
+                                color === 'orange' ? '#dc2626' : 
+                                color === 'purple' ? '#d946ef' : 
+                                color === 'indigo' ? '#7c3aed' : 
+                                '#f43f5e'})`
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={addCategory}
+                  disabled={!newCategoryName.trim()}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                    newCategoryName.trim()
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Add Category
+                </button>
+              </div>
+            </div>
+            
+            {/* Existing Categories */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Current Categories</h3>
+              {Object.entries(categories).map(([key, category]) => {
+                const Icon = category.icon;
+                const isDefault = defaultCategories[key] !== undefined;
+                
+                return (
+                  <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Icon size={24} className={`text-${category.color}-600`} />
+                      <span className="font-medium">{category.name}</span>
+                      {isDefault && (
+                        <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">Default</span>
+                      )}
+                    </div>
+                    {!isDefault && (
+                      <button
+                        onClick={() => deleteCategory(key)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="mt-6 pt-6 border-t">
+              <button
+                onClick={resetToDefaults}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Reset to default categories
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const JournalModal = () => {
     const currentEntry = journalEntries[selectedDate] || '';
     const [tempEntry, setTempEntry] = useState(currentEntry);
@@ -731,6 +934,7 @@ const SelfCareToolkit = () => {
       
       {/* Modals */}
       {showJournal && <JournalModal />}
+      {showSettings && <SettingsModal />}
     </div>
   );
 };
