@@ -342,10 +342,15 @@ const SelfCareToolkit = () => {
   // Journal Component
   // Settings/Category Management Component
   const SettingsModal = () => {
+    const [activeSettingsTab, setActiveSettingsTab] = useState('categories');
     const [newCategoryName, setNewCategoryName] = useState('');
     const [selectedIcon, setSelectedIcon] = useState('Target');
     const [selectedColor, setSelectedColor] = useState('emerald');
     const [editingCategory, setEditingCategory] = useState(null);
+    const [selectedCategoryForTasks, setSelectedCategoryForTasks] = useState(Object.keys(categories)[0]);
+    const [editingTask, setEditingTask] = useState(null);
+    const [newTaskLabel, setNewTaskLabel] = useState('');
+    const [newTaskTip, setNewTaskTip] = useState('');
 
     const iconOptions = {
       Target: Target,
@@ -385,8 +390,8 @@ const SelfCareToolkit = () => {
     };
 
     const deleteCategory = (categoryKey) => {
-      if (Object.keys(categories).length <= 3) {
-        alert('You must keep at least 3 categories');
+      if (Object.keys(categories).length <= 1) {
+        alert('You must keep at least 1 category');
         return;
       }
       
@@ -395,11 +400,89 @@ const SelfCareToolkit = () => {
         delete newCategories[categoryKey];
         return newCategories;
       });
+      
+      // If deleted category was selected for tasks, select another
+      if (selectedCategoryForTasks === categoryKey) {
+        const remainingKeys = Object.keys(categories).filter(k => k !== categoryKey);
+        setSelectedCategoryForTasks(remainingKeys[0] || '');
+      }
+    };
+
+    const editCategory = (categoryKey) => {
+      const category = categories[categoryKey];
+      setEditingCategory(categoryKey);
+      setNewCategoryName(category.name);
+      setSelectedIcon(category.iconName);
+      setSelectedColor(category.color);
+    };
+
+    const updateCategory = () => {
+      if (!editingCategory || !newCategoryName.trim()) return;
+      
+      setCategories(prev => ({
+        ...prev,
+        [editingCategory]: {
+          ...prev[editingCategory],
+          name: newCategoryName,
+          iconName: selectedIcon,
+          color: selectedColor
+        }
+      }));
+      
+      setEditingCategory(null);
+      setNewCategoryName('');
+    };
+
+    const addTask = () => {
+      if (!newTaskLabel.trim() || !selectedCategoryForTasks) return;
+      
+      setCategories(prev => {
+        const category = prev[selectedCategoryForTasks];
+        const newTaskId = `${selectedCategoryForTasks}${Date.now()}`;
+        
+        return {
+          ...prev,
+          [selectedCategoryForTasks]: {
+            ...category,
+            items: [...category.items, {
+              id: newTaskId,
+              label: newTaskLabel,
+              tip: newTaskTip || 'Custom task'
+            }]
+          }
+        };
+      });
+      
+      setNewTaskLabel('');
+      setNewTaskTip('');
+    };
+
+    const updateTask = (categoryKey, taskId, updates) => {
+      setCategories(prev => ({
+        ...prev,
+        [categoryKey]: {
+          ...prev[categoryKey],
+          items: prev[categoryKey].items.map(item =>
+            item.id === taskId ? { ...item, ...updates } : item
+          )
+        }
+      }));
+    };
+
+    const deleteTask = (categoryKey, taskId) => {
+      setCategories(prev => ({
+        ...prev,
+        [categoryKey]: {
+          ...prev[categoryKey],
+          items: prev[categoryKey].items.filter(item => item.id !== taskId)
+        }
+      }));
     };
 
     const resetToDefaults = () => {
-      if (confirm('Reset all categories to defaults? This will remove custom categories.')) {
+      if (confirm('Reset all categories to defaults? This will remove custom categories and tasks.')) {
         setCategories(defaultCategories);
+        setSelectedCategoryForTasks(Object.keys(defaultCategories)[0]);
       }
     };
 
@@ -419,10 +502,38 @@ const SelfCareToolkit = () => {
             </button>
           </div>
           
+          {/* Tabs */}
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveSettingsTab('categories')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeSettingsTab === 'categories'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Categories
+            </button>
+            <button
+              onClick={() => setActiveSettingsTab('tasks')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeSettingsTab === 'tasks'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Tasks
+            </button>
+          </div>
+          
           <div className="p-6 overflow-y-auto max-h-[60vh]">
-            {/* Add New Category */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Add New Category</h3>
+            {activeSettingsTab === 'categories' && (
+              <>
+                {/* Add/Edit Category */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">
+                    {editingCategory ? 'Edit Category' : 'Add New Category'}
+                  </h3>
               <div className="space-y-4">
                 <input
                   type="text"
@@ -485,17 +596,32 @@ const SelfCareToolkit = () => {
                   </div>
                 </div>
                 
-                <button
-                  onClick={addCategory}
-                  disabled={!newCategoryName.trim()}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    newCategoryName.trim()
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  Add Category
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={editingCategory ? updateCategory : addCategory}
+                    disabled={!newCategoryName.trim()}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      newCategoryName.trim()
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    {editingCategory ? 'Update Category' : 'Add Category'}
+                  </button>
+                  {editingCategory && (
+                    <button
+                      onClick={() => {
+                        setEditingCategory(null);
+                        setNewCategoryName('');
+                        setSelectedIcon('Target');
+                        setSelectedColor('emerald');
+                      }}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             
@@ -504,25 +630,27 @@ const SelfCareToolkit = () => {
               <h3 className="text-lg font-semibold">Current Categories</h3>
               {Object.entries(categories).map(([key, category]) => {
                 const Icon = iconMap[category.iconName] || iconMap.Target;
-                const isDefault = defaultCategories[key] !== undefined;
                 
                 return (
                   <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <Icon size={24} className={`text-${category.color}-600`} />
                       <span className="font-medium">{category.name}</span>
-                      {isDefault && (
-                        <span className="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded">Default</span>
-                      )}
                     </div>
-                    {!isDefault && (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => editCategory(key)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Edit2 size={18} />
+                      </button>
                       <button
                         onClick={() => deleteCategory(key)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <Trash2 size={18} />
                       </button>
-                    )}
+                    </div>
                   </div>
                 );
               })}
@@ -536,6 +664,114 @@ const SelfCareToolkit = () => {
                 Reset to default categories
               </button>
             </div>
+            </>
+            )}
+            
+            {activeSettingsTab === 'tasks' && (
+              <>
+                {/* Category Selector */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Category to Manage Tasks
+                  </label>
+                  <select
+                    value={selectedCategoryForTasks}
+                    onChange={(e) => setSelectedCategoryForTasks(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {Object.entries(categories).map(([key, cat]) => (
+                      <option key={key} value={key}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Add New Task */}
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Add New Task</h3>
+                  <div className="space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Task name"
+                      value={newTaskLabel}
+                      onChange={(e) => setNewTaskLabel(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Task tip (optional)"
+                      value={newTaskTip}
+                      onChange={(e) => setNewTaskTip(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={addTask}
+                      disabled={!newTaskLabel.trim()}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        newTaskLabel.trim()
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      Add Task
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Existing Tasks */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">
+                    Tasks in {categories[selectedCategoryForTasks]?.name}
+                  </h3>
+                  {categories[selectedCategoryForTasks]?.items.map((task) => (
+                    <div key={task.id} className="flex items-start justify-between p-4 bg-gray-50 rounded-lg">
+                      {editingTask === task.id ? (
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            value={task.label}
+                            onChange={(e) => updateTask(selectedCategoryForTasks, task.id, { label: e.target.value })}
+                            className="w-full px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <input
+                            type="text"
+                            value={task.tip}
+                            onChange={(e) => updateTask(selectedCategoryForTasks, task.id, { tip: e.target.value })}
+                            className="w-full px-3 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            onClick={() => setEditingTask(null)}
+                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-800">{task.label}</div>
+                            <div className="text-sm text-gray-500 mt-0.5">{task.tip}</div>
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <button
+                              onClick={() => setEditingTask(task.id)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button
+                              onClick={() => deleteTask(selectedCategoryForTasks, task.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
