@@ -81,15 +81,21 @@ const SelfCareToolkit = () => {
     localStorage.setItem('selfCareJournalEntries', JSON.stringify(journalEntries));
   }, [journalEntries]);
 
-  useEffect(() => {
-    localStorage.setItem('selfCareCategories', JSON.stringify(categories));
-  }, [categories]);
+  // Icon mapping for categories
+  const iconMap = {
+    exercise: Dumbbell,
+    work: Briefcase,
+    nutrition: Apple,
+    meditation: Heart,
+    reading: Target,
+    social: MapPin
+  };
 
   // Category definitions with detailed items
   const defaultCategories = {
     exercise: { 
       name: 'Exercise',
-      icon: Dumbbell,
+      icon: iconMap.exercise,
       color: 'emerald',
       items: [
         { id: 'ex1', label: '20-minute bodyweight circuit', tip: 'No equipment needed' },
@@ -104,7 +110,7 @@ const SelfCareToolkit = () => {
     },
     work: { 
       name: 'Work',
-      icon: Briefcase,
+      icon: iconMap.work,
       color: 'blue',
       items: [
         { id: 'w1', label: 'Set specific work hours', tip: 'Consistency is key' },
@@ -119,7 +125,7 @@ const SelfCareToolkit = () => {
     },
     nutrition: { 
       name: 'Nutrition',
-      icon: Apple,
+      icon: iconMap.nutrition,
       color: 'orange',
       items: [
         { id: 'n1', label: 'Eat fresh fruits/vegetables', tip: 'Visit local markets' },
@@ -134,7 +140,7 @@ const SelfCareToolkit = () => {
     },
     meditation: {
       name: 'Meditation',
-      icon: Heart,
+      icon: iconMap.meditation,
       color: 'purple',
       items: [
         { id: 'm1', label: 'Morning meditation', tip: '10-20 minutes to start the day' },
@@ -149,7 +155,7 @@ const SelfCareToolkit = () => {
     },
     reading: {
       name: 'Reading',
-      icon: Target,
+      icon: iconMap.reading,
       color: 'indigo',
       items: [
         { id: 'r1', label: 'Read for 30 minutes', tip: 'Fiction or non-fiction' },
@@ -164,7 +170,7 @@ const SelfCareToolkit = () => {
     },
     social: {
       name: 'Social Connections',
-      icon: MapPin,
+      icon: iconMap.social,
       color: 'pink',
       items: [
         { id: 's1', label: 'Video call family/friends', tip: 'Stay connected remotely' },
@@ -184,6 +190,10 @@ const SelfCareToolkit = () => {
     const saved = localStorage.getItem('selfCareCategories');
     return saved ? JSON.parse(saved) : defaultCategories;
   });
+
+  useEffect(() => {
+    localStorage.setItem('selfCareCategories', JSON.stringify(categories));
+  }, [categories]);
 
   // Get data for selected date
   const getDateData = (date) => {
